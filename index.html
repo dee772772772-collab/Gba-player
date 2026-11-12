@@ -42,7 +42,16 @@
   <script>
     const picker = document.getElementById("rom");
     const status = document.getElementById("status");
+    
 
+    window.addEventListener("error", (event) => {
+      status.textContent = "Page error: " + event.message;
+    });
+
+    window.addEventListener("unhandledrejection", (event) => {
+      status.textContent = "Load error: " + event.reason;
+    });
+    
     let currentRomUrl = null;
     let emulatorStarted = false;
 
@@ -70,7 +79,7 @@
         script.src = window.EJS_pathtodata + "loader.js";
         script.onload = () => {
           status.textContent =
-            "If the game does not start, check the browser console for errors.";
+            "Emulator loader downloaded; waiting for game...";
         };
         script.onerror = () => {
           status.textContent =
