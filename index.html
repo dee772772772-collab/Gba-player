@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My GBA Player</title>
+  <style>
+    body {
+      margin: 24px;
+      background: #151923;
+      color: #f2f4f8;
+      font-family: system-ui, sans-serif;
+    }
+
+    main {
+      max-width: 900px;
+      margin: auto;
+    }
+
+    #game {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background: #000;
+      margin-top: 16px;
+    }
+
+    input, button { font: inherit; padding: 8px; }
+    #status { color: #b9c4d0; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>My GBA Player</h1>
+    <p>Select a legally obtained <code>.gba</code> game file from your device.</p>
+
+    <input id="rom" type="file" accept=".gba,.zip">
+    <p id="status">Choose a game file to start.</p>
+
+    <div id="game"></div>
+  </main>
+
+  <script>
+    const picker = document.getElementById("rom");
+    const status = document.getElementById("status");
+
+    let currentRomUrl = null;
+    let emulatorStarted = false;
+
+    picker.addEventListener("change", () => {
+      const file = picker.files[0];
+      if (!file) return;
+
+      // Release the previous local file URL, if any.
+      if (currentRomUrl) URL.revokeObjectURL(currentRomUrl);
+      currentRomUrl = URL.createObjectURL(file);
+
+      // EmulatorJS reads these settings when its loader starts.
+      window.EJS_player = "#game";
+      window.EJS_core = "gba";
+      window.EJS_gameUrl = currentRomUrl;
+      window.EJS_pathtodata =
+        "https://cdn.emulatorjs.org/stable/data/";
+
+      status.textContent = "Starting emulator…";
+
+      // Load the emulator only once, after a game is selected.
+      if (!emulatorStarted) {
+        emulatorStarted = true;
+        const script = document.createElement("script");
+        script.src = window.EJS_pathtodata + "loader.js";
+        script.onload = () => {
+          status.textContent =
+            "If the game does not start, check the browser console for errors.";
+        };
+        script.onerror = () => {
+          status.textContent =
+            "Could not load EmulatorJS. Check your internet connection or CDN address.";
+          emulatorStarted = false;
+        };
+        document.body.appendChild(script);
+      } else {
+        status.textContent =
+          "To load another game, refresh the page and choose the new file.";
+      }
+    });
+  </script>
+</body>
+</html>
